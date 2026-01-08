@@ -1,0 +1,21 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+# Visual Studio & .NET Binaries
+[Dd]ebug/
+[Rr]elease/
+*.exe
+*.dll
+*.pdb
+*.suo
+*.user
+*.vs/  # The hidden Visual Studio cache folder
+
+# Node.js and Angular
+node_modules/
+dist/
+npm-debug.log
+.angular/
+/src/Apex-Finance-Manager/.vs/Apex-Finance-Manager/FileContentIndex
+/src/Apex-Finance-Manager/.vs/Apex-Finance-Manager/v17

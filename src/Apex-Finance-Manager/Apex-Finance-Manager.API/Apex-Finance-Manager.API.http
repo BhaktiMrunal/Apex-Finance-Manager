@@ -1,0 +1,6 @@
+@Apex_Finance_Manager.API_HostAddress = http://localhost:5254
+
+GET {{Apex_Finance_Manager.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
