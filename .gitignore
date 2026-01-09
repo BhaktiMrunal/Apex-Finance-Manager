@@ -17,3 +17,4 @@ node_modules/
 dist/
 npm-debug.log
 .angular/
+/src/Apex-Finance-Manager/.vs
