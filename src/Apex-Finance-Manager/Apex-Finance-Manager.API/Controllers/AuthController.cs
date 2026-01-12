@@ -3,6 +3,10 @@ using Apex_Finance_Manager.Entities.DTOs;
 using Apex_Finance_Manager.Entities.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Apex_Finance_Manager.API.Controllers;
 
@@ -12,9 +16,11 @@ public class AuthController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
 
-    public AuthController(ApplicationDbContext context)
+    private readonly IConfiguration _config;
+    public AuthController(ApplicationDbContext context, IConfiguration config)
     {
         _context = context;
+        _config = config;
     }
 
     [HttpPost("register")]
@@ -44,5 +50,47 @@ public class AuthController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok(new { message = "Registration successful!" });
+    }
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(LoginDto model)
+    {
+        // 1. Find user
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+        if (user == null) return Unauthorized("Invalid email or password.");
+
+        // 2. Verify password using BCrypt
+        if (!BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
+            return Unauthorized("Invalid email or password.");
+
+        // 3. Create Claims
+        var claims = new[]
+        {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.GivenName, user.FirstName)
+    };
+
+        // 4. Generate Token
+        var jwtKey = _config["Jwt:Key"];
+        if (string.IsNullOrEmpty(jwtKey))
+        {
+            throw new InvalidOperationException("JWT key is not configured.");
+        }
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _config["Jwt:Issuer"],
+            audience: _config["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.Now.AddMinutes(Convert.ToDouble(_config["Jwt:DurationInMinutes"])),
+            signingCredentials: creds
+        );
+
+        return Ok(new
+        {
+            token = new JwtSecurityTokenHandler().WriteToken(token),
+            firstName = user.FirstName
+        });
     }
 }

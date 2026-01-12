@@ -1,5 +1,9 @@
 using Apex_Finance_Manager.Data.DBContext;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,19 +13,63 @@ builder.Services.AddControllers();
 
 // Configure Swagger/OpenAPI (using Swashbuckle 10.0.1 compatible setup)
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddSwaggerGen(opt =>
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    opt.SwaggerDoc("v1", new OpenApiInfo { Title = "Apex Finance API", Version = "v1" });
+
+    // Define the Security Scheme (Bearer Token)
+    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Title = "Apex Finance Manager API",
-        Version = "v1",
-        Description = "API Documentation for the PFM Tool"
+        In = ParameterLocation.Header,
+        Description = "Please enter token as: Bearer {your_token}",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "bearer"
+    });
+
+    // Apply the Security Scheme globally to all endpoints
+    opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[]{}
+        }
     });
 });
+
 
 // Configure Database Connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(
+                    builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured.")
+                )
+            )
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -39,10 +87,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRouting();
+
+// Use Authentication middleware
+app.UseAuthentication();
 
 // Use Authorization middleware
-app.UseAuthorization();
-
+app.UseAuthorization(); 
 // Map the Controller routes (essential for AuthController to work)
 app.MapControllers();
 
