@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* Dubai Market Custom Palette */
+:root {
+  --primary: #065f46; /* UAE Green */
+  --accent: #0f172a;  /* Deep Navy */
+}
+
+body {
+  margin: 0;
+  background-color: #f8fafc;
+  font-family: 'Inter', sans-serif;
+}

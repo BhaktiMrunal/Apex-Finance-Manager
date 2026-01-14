@@ -7,6 +7,15 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Allow CORS for Angular frontend
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowAngular", policy => {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // --- 1. Add Services to the container ---
 // Controllers are used for the standard MVC pattern (like AuthController)
 builder.Services.AddControllers();
@@ -71,6 +80,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+
 var app = builder.Build();
 
 // --- 2. Configure the HTTP request pipeline ---
@@ -87,6 +97,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowAngular");
 app.UseRouting();
 
 // Use Authentication middleware

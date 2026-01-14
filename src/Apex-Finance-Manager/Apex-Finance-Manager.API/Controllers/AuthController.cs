@@ -90,7 +90,8 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             token = new JwtSecurityTokenHandler().WriteToken(token),
-            firstName = user.FirstName
+            firstName = user.FirstName,
+            lastName=user.LastName
         });
     }
 }

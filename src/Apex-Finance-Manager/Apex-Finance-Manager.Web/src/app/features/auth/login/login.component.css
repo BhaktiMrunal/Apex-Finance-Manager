@@ -1,0 +1,43 @@
+/* // Smooth fade-in animation for the login card */
+:host {
+  display: block;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* // Custom gold-shimmer effect for the Apex branding */
+.brand-shimmer {
+  background: linear-gradient(
+    90deg, 
+    rgba(234, 179, 8, 0) 0%, 
+    rgba(234, 179, 8, 0.2) 50%, 
+    rgba(234, 179, 8, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* // Enhanced focus state for UAE accessibility standards */
+input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.3); 
+}
+
+/* // Custom scrollbar for a premium look (if the form is long on small screens) */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a2b4b;
+  border-radius: 10px;
+}
